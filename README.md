@@ -1,12 +1,12 @@
 # hs6PROCESS_SEABASS
- Consistent with up to date protocols and NASA's SEABASS submission standards, hs6PROCESS_SEABASS processes raw backscattering data as sampled in natural water bodies using HOBI Labs Hydroscat-6 Spectral Backscattering Sensor and Fluorometer(hs6). hs6PROCESS_SEABASS should also be compatible with Hydroscat-4 and 2 variants this backscattering spectrometer/fluorometer.
+Consistent with up to date protocols and NASA's SEABASS submission standards, hs6PROCESS_SEABASS processes raw backscattering data as sampled in natural water bodies using HOBI Labs Hydroscat-6 Spectral Backscattering Sensor and Fluorometer (hs6). hs6PROCESS_SEABASS should also be compatible with Hydroscat-4 and 2 versions of this instrument.
 
-This Matlab script processes raw backscattering coefficients, as sampled in natural water bodies using HOBI Labs Hydroscat-6 ba. Although untested, we are confident that hs6PROCESS_SEABASS is also compatible with Hydroscat-4 and Hydroscat-2 data. We do point out however that although the number of backscattering channels it can handle is flexible, two fluorescence (fl) channels are hardwired into the hs6PROCESS_SEABASS script. Thus raw hs6 data MUST contain two fl channels. My code has hardwired wavelengths of the two fl channels as 470 excitation/510 emission (channel 1) and 442 excitation/700 emission (channel 2). If these wavelength values are incorrect, user should not worry. hs6PROCESS_SEABASS does not perform any processing steps on fl values, transfering raw values into output files. This means that user can simply "correct" fl wavelengths in the Seabass-compatible output files.
+This Matlab script processes raw backscattering coefficients, as sampled in natural water bodies using HOBI Labs Hydroscat-6 Backscattering Meter and Fluorometer. Although untested, we are confident that hs6PROCESS_SEABASS is also compatible with Hydroscat-4 and Hydroscat-2 data. We do point out however that although the number of backscattering channels it can handle is flexible, two fluorescence (fl) channels are hardwired into the hs6PROCESS_SEABASS script. Thus raw hs6 data MUST contain two fl channels. My code has hardwired wavelengths of the two fl channels as 470 excitation/510 emission (channel 1) and 442 excitation/700 emission (channel 2). If these wavelength values are incorrect, user should not worry. hs6PROCESS_SEABASS does not perform any processing steps on fl values, transfering raw values into output files. This means that user can simply "correct" fl wavelengths in the Seabass-compatible output files.
 
 hs6PROCESS_SEABASS uses up to date processing protocols (as of June 2019) to process backscattering coefficients, which it outputs as both individual and depth-binned spectra. All output data products are formatted as to be consistent with NASA's SeaWiFS Bio-Optical Archive and Storage System (SeaBASS). User should run hs6PROCESS_SEABASS AFTER running acs_PROCESS_SEABASS if he/she wishes to synchronize ac-s adn hs6 timestamps.
 
 Inputs:
-metadata_HeaderFile_hs6.txt - ascii file (.dat) containing metadata required to process raw hs6 data 
+metadata_HeaderFile_hs6.txt - ascii file containing metadata required to process hs6 data 
 Station_#_ACS.fig - matlab figure (.fig) depicting vertical position of ac-s across time (of cast). This figure is not physically uploaded into hs6PROCESS_SEABASS, however, the reference point (red dot) and timestamp of reference point (figure title) should be viewed BEFORE running hs6PROCESS_SEABASS so that user can familiarize him/herself with position and timestamp of reference point (see "User Instructions"). 
 
 Outputs:
@@ -45,10 +45,40 @@ User Instructions:
   3. Select appropriate metadata_HeaderFile_hs6.txt file when prompted. 
   6. Time-stamp hs6 data for potential syncrhonization with ac-s (if ac-s was deployed simultaneously)
     a. Matlab will produce a "time series" plot indicating hs6 position (depth) over "time" (spectum index).
-    b. User selects a reference point on this plot by entering the index of the desired point into the command window.
+    b. User selects a reference point on this plot by entering the index of the desired point into the command window. Data cursor is a 
+    useful resource.
     c. User is asked to confirm his/her selection on command window with y/n keys. If user rejects his/her selection, he/she will be           prompted to try again.
     d. User is now asked to enter a "reference time". This will be used to determine the exact time of day that the reference point (step
-    6b) was measured by hs6. It will be used to back-calculate and forward-calculate time of day at which other bbp/fl spectra were
-    sampled by hs6.***
+    6b) was measured by hs6. This time of day should be GMT and formatted as military time (HH:MM:SS). It is be used to back-calculate and 
+    forward-calculate time of day at which other bbp/fl spectra were sampled by hs6.***
     
- ***If user wishes to syncrhonize simultaneously-deployed hs6 and ac-s casts: Compare time series plot produced by hs6PROCESS_SEABASS to time-series plot output from 
+ ***If user wishes to syncrhonize simultaneously-deployed hs6 and ac-s casts: Compare time series plot produced by hs6PROCESS_SEABASS to  time-series plot output from acsPROCESS_SEABASS. Select the hs6 reference point which corresponds to the position (depth) of the ac-s reference point (indicated by a red dot on previously-created acsPROCESS_SEABASS output figure). When prompted for a reference time, enter the GMT time of day that appears on the top of Station_#_ACS.fig.
+ 
+Filling out metadata_HeaderFile_hs6.txt:
+hs6PROCESS_SEABASS relies on a metadata header to process hs6 data. All information \should be included in this header. A header template (metadata_HeaderFile_hs6.txt) indicating important fields is provided in GitHub hs6PROCESS_SEABASS repository. When filling out this header file, the first three headers (indicating user instructions) should be left alone. Required information fields contain = signs. USER SHOULD ONLY ALTER TEXT APPEARING ON THE RIGHT HAND SIDE OF =. User should indicate unavailability of desired information with "NA". DO NOT DELETE ROWS! Below are fields contained in metadata_HeaderFile_acs.txt and instructions on how to fill them out. Spaces should never be used in header fields; use underscore instead (_).
+
+data_file_name= indicate name of ascii file containing unprocessed hs6 data. This file is generated using WET Labs Archive File Processing (WAP) software program, which merges a/c data with CTD data using nearest neighbor approach. Prior to running acsPROCESS_SEABASS, user must open  WAP-generated ascii file and maually indicate Conductivity, Temperature, and Depth column headers inside as follows: COND*, TEMP* and DEPTH*. All other column headers should remain untouched.
+
+data_file_name=pathway for aforementioned WAP-generated ac-s ascii file (data_file_name). This pathway should include the folder in which sits, and should be ended using "/" or "\" for mac and pc respectively. 
+
+affiliations=name of company or research institution with which investigators are affiliated. 
+
+investigators=lists of investigators. Multiple names should be separated by commas and _ should be used in place of spaces.
+
+contact=email of principle investigator
+
+experiment=name of experiment or field campaign 
+
+station=field station number 
+
+latitude=latitude of field station. This should be indicated in decimal form. DO NOT format in minutes or seconds. Do not include Roman letters. South should be indicated with a negative sign.
+
+longitude=longitude of field station. This should be indicated in decimal form. DO NOT format in minutes or seconds. Do not include Roman letters. West should be indicated with a negative sign.
+
+documents=additional documents user wishes to submit to SeaBASS. DO NOT INDICATE kudelalab_HS6_readme.pdf. This is printed automatically in output files.
+
+water_depth=bottom depth of the field station in meters. Numerals only. Do not include units.
+
+calibration_files=name of original factory-supplied calibration file. This file contains instrument-specific coefficients used to convert raw signals (measured by hs6) into engineering units. Although this step is carried out in HydroSoft (before  
+
+date(yyyymmdd)=indicate date on which ac-s was deployed.
