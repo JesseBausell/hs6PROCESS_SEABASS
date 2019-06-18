@@ -1,5 +1,5 @@
 # hs6PROCESS_SEABASS
-Consistent with up to date protocols and NASA's SEABASS submission standards, hs6PROCESS_SEABASS processes raw backscattering data as sampled in natural water bodies using HOBI Labs Hydroscat-6 Spectral Backscattering Sensor and Fluorometer (hs6). hs6PROCESS_SEABASS should also be compatible with Hydroscat-4 and 2 versions of this instrument.
+Consistent with up to date protocols and NASA's SEABASS submission standards, hs6PROCESS_SEABASS processes raw backscattering data (engineering units) sampled in natural water bodies using HOBI Labs Hydroscat-6 Spectral Backscattering Sensor and Fluorometer (hs6). hs6PROCESS_SEABASS should also be compatible with Hydroscat-4 and 2 versions of this instrument.
 
 This Matlab script processes raw backscattering coefficients, as sampled in natural water bodies using HOBI Labs Hydroscat-6 Backscattering Meter and Fluorometer. Although untested, we are confident that hs6PROCESS_SEABASS is also compatible with Hydroscat-4 and Hydroscat-2 data. We do point out however that although the number of backscattering channels it can handle is flexible, two fluorescence (fl) channels are hardwired into the hs6PROCESS_SEABASS script. Thus raw hs6 data MUST contain two fl channels. My code has hardwired wavelengths of the two fl channels as 470 excitation/510 emission (channel 1) and 442 excitation/700 emission (channel 2). If these wavelength values are incorrect, user should not worry. hs6PROCESS_SEABASS does not perform any processing steps on fl values, transfering raw values into output files. This means that user can simply "correct" fl wavelengths in the Seabass-compatible output files.
 
@@ -11,7 +11,7 @@ Station_#_ACS.fig - matlab figure (.fig) depicting vertical position of ac-s acr
 
 Outputs:
 Station_#_bb.txt - Seabass-formatted ascii file containing individual particulate backscattering (bbp) + fl spectra
-Station_#_a_bin#.txt* - Seabass-formatted ascii file(s) containing processed & depth-binned bbp spectra
+Station_#_bb_bin#.txt* - Seabass-formatted ascii file(s) containing processed & depth-binned bbp spectra
 
 Required Matlab Scripts and Functions:
 Doxarian_SIGMA.m
@@ -55,15 +55,15 @@ User Instructions:
  ***If user wishes to syncrhonize simultaneously-deployed hs6 and ac-s casts: Compare time series plot produced by hs6PROCESS_SEABASS to  time-series plot output from acsPROCESS_SEABASS. Select the hs6 reference point which corresponds to the position (depth) of the ac-s reference point (indicated by a red dot on previously-created acsPROCESS_SEABASS output figure). When prompted for a reference time, enter the GMT time of day that appears on the top of Station_#_ACS.fig.
  
 Filling out metadata_HeaderFile_hs6.txt:
-hs6PROCESS_SEABASS relies on a metadata header to process hs6 data. All information \should be included in this header. A header template (metadata_HeaderFile_hs6.txt) indicating important fields is provided in GitHub hs6PROCESS_SEABASS repository. When filling out this header file, the first three headers (indicating user instructions) should be left alone. Required information fields contain = signs. USER SHOULD ONLY ALTER TEXT APPEARING ON THE RIGHT HAND SIDE OF =. User should indicate unavailability of desired information with "NA". DO NOT DELETE ROWS! Below are fields contained in metadata_HeaderFile_acs.txt and instructions on how to fill them out. Spaces should never be used in header fields; use underscore instead (_).
+hs6PROCESS_SEABASS relies on a metadata header to process hs6 data. All information \should be included in this header. A header template (metadata_HeaderFile_hs6.txt) indicating important fields is provided in GitHub hs6PROCESS_SEABASS repository. When filling out this header file, the first three headers (indicating user instructions) should be left alone. Required information fields contain = signs. USER SHOULD ONLY ALTER TEXT APPEARING ON THE RIGHT HAND SIDE OF =. User should indicate unavailability of desired information with "NA". DO NOT DELETE ROWS! Below are fields contained in metadata_HeaderFile_hs6.txt and instructions on how to fill them out. Spaces should never be used in header fields; use underscore instead (_).
 
-data_file_name= indicate name of ascii file containing unprocessed hs6 data. This file is generated using WET Labs Archive File Processing (WAP) software program, which merges a/c data with CTD data using nearest neighbor approach. Prior to running acsPROCESS_SEABASS, user must open  WAP-generated ascii file and maually indicate Conductivity, Temperature, and Depth column headers inside as follows: COND*, TEMP* and DEPTH*. All other column headers should remain untouched.
+data_file_name= indicate name of ascii (.dat) file containing unprocessed hs6 data. This file is generated using HydroSoft software created by HOBI Labs to support their instrument platforms (e.g. HydroScat, a-Beta, c-Beta & Abyss-2) by converting raw signals to engineering units. Please note: When using HydroSoft to output .dat files, user should be sure NOT to apply pure-water correction; hs6PROCESS_SEABASS applies this step already. It is ok for user to output both sigma-corrected and uncorrected backscttering coefficients as hs6PROCESS_SEABASS can differentiate between them.
 
-data_file_name=pathway for aforementioned WAP-generated ac-s ascii file (data_file_name). This pathway should include the folder in which sits, and should be ended using "/" or "\" for mac and pc respectively. 
+data_file_name=pathway for aforementioned HydroSoft-generated ac-s .dat file (data_file_name). This pathway should include the folder in which sits, and should be ended using "/" or "\" for mac and pc respectively. 
 
 affiliations=name of company or research institution with which investigators are affiliated. 
 
-investigators=lists of investigators. Multiple names should be separated by commas and _ should be used in place of spaces.
+investigators=lists of investigators. Multiple names should be separated by commas and "_" should be used in place of spaces.
 
 contact=email of principle investigator
 
@@ -79,6 +79,11 @@ documents=additional documents user wishes to submit to SeaBASS. DO NOT INDICATE
 
 water_depth=bottom depth of the field station in meters. Numerals only. Do not include units.
 
-calibration_files=name of original factory-supplied calibration file. This file contains instrument-specific coefficients used to convert raw signals (measured by hs6) into engineering units. Although this step is carried out in HydroSoft (before  
+calibration_file=name of original factory-supplied calibration file. This file contains instrument-specific coefficients used to convert raw signals (measured by hs6) into engineering units. Although this file is not used by hs6PROCESS_SEABASS to process hs6 data (it was used in Hydrosoft), users/PIs are strongly encouraged to disclose all ancillary calibration files in their submissions to SEABaSS. hs6PROCESS_SEABASS will correctly place this file into headers of output files (e.g. Station_#_bb.txt and Station_#_bb_bin#.txt) formatted for SEABaSS.
 
 date(yyyymmdd)=indicate date on which ac-s was deployed.
+
+kexp_vals=wavelength-dependent constants used to calculate sigma coefficients of attenutation, Kbb, (see HydroSoft user manual or kudelalab_HS6_readme.pdf for details). These coefficients are instrument can be found inside the factory-supplied calibration file (header field: calibration_file) and should be listed in the same order that START HERE.
+
+apg_bin_files=COAST_18_ac-s_bin_0.5.txt,COAST_18_ac-s_bin_1.txt,COAST_18_ac-s_bin_2.txt
+apg_bin_path=/Users/JBausell/Desktop/acs_Test2/
