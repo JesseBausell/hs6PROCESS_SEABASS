@@ -1,5 +1,5 @@
 # hs6PROCESS_SEABASS
-Consistent with up to date protocols and NASA's SEABASS submission standards, hs6PROCESS_SEABASS processes raw backscattering data (engineering units) sampled in natural water bodies using HOBI Labs Hydroscat-6 Spectral Backscattering Sensor and Fluorometer (hs6). hs6PROCESS_SEABASS should also be compatible with Hydroscat-4 and 2 versions of this instrument.
+Consistent with up to date protocols and NASA's SEABaSS submission standards, hs6PROCESS_SEABASS processes raw backscattering data (engineering units) sampled in natural water bodies using HOBI Labs Hydroscat-6 Spectral Backscattering Sensor and Fluorometer (hs6). hs6PROCESS_SEABASS should also be compatible with Hydroscat-4 and 2 versions of this instrument.
 
 This Matlab script processes raw backscattering coefficients, as sampled in natural water bodies using HOBI Labs Hydroscat-6 Backscattering Meter and Fluorometer. Although untested, we are confident that hs6PROCESS_SEABASS is also compatible with Hydroscat-4 and Hydroscat-2 data. We do point out however that although the number of backscattering channels it can handle is flexible, two fluorescence (fl) channels are hardwired into the hs6PROCESS_SEABASS script. Thus raw hs6 data MUST contain two fl channels. My code has hardwired wavelengths of the two fl channels as 470 excitation/510 emission (channel 1) and 442 excitation/700 emission (channel 2). If these wavelength values are incorrect, user should not worry. hs6PROCESS_SEABASS does not perform any processing steps on fl values, transfering raw values into output files. This means that user can simply "correct" fl wavelengths in the Seabass-compatible output files.
 
@@ -57,7 +57,7 @@ User Instructions:
 Filling out metadata_HeaderFile_hs6.txt:
 hs6PROCESS_SEABASS relies on a metadata header to process hs6 data. All information \should be included in this header. A header template (metadata_HeaderFile_hs6.txt) indicating important fields is provided in GitHub hs6PROCESS_SEABASS repository. When filling out this header file, the first three headers (indicating user instructions) should be left alone. Required information fields contain = signs. USER SHOULD ONLY ALTER TEXT APPEARING ON THE RIGHT HAND SIDE OF =. User should indicate unavailability of desired information with "NA". DO NOT DELETE ROWS! Below are fields contained in metadata_HeaderFile_hs6.txt and instructions on how to fill them out. Spaces should never be used in header fields; use underscore instead (_).
 
-data_file_name= indicate name of ascii (.dat) file containing unprocessed hs6 data. This file is generated using HydroSoft software created by HOBI Labs to support their instrument platforms (e.g. HydroScat, a-Beta, c-Beta & Abyss-2) by converting raw signals to engineering units. Please note: When using HydroSoft to output .dat files, user should be sure NOT to apply pure-water correction; hs6PROCESS_SEABASS applies this step already. It is ok for user to output both sigma-corrected and uncorrected backscttering coefficients as hs6PROCESS_SEABASS can differentiate between them.
+data_file_name=indicate name of ascii (.dat) file containing unprocessed hs6 data. This file is generated using HydroSoft software created by HOBI Labs to support their instrument platforms (e.g. HydroScat, a-Beta, c-Beta & Abyss-2) by converting raw signals to engineering units. Please note: When using HydroSoft to output .dat files, user should be sure NOT to apply pure-water correction; hs6PROCESS_SEABASS applies this step already. It is ok for user to output both sigma-corrected and uncorrected backscttering coefficients as hs6PROCESS_SEABASS can differentiate between them.
 
 data_file_name=pathway for aforementioned HydroSoft-generated ac-s .dat file (data_file_name). This pathway should include the folder in which sits, and should be ended using "/" or "\" for mac and pc respectively. 
 
@@ -81,9 +81,38 @@ water_depth=bottom depth of the field station in meters. Numerals only. Do not i
 
 calibration_file=name of original factory-supplied calibration file. This file contains instrument-specific coefficients used to convert raw signals (measured by hs6) into engineering units. Although this file is not used by hs6PROCESS_SEABASS to process hs6 data (it was used in Hydrosoft), users/PIs are strongly encouraged to disclose all ancillary calibration files in their submissions to SEABaSS. hs6PROCESS_SEABASS will correctly place this file into headers of output files (e.g. Station_#_bb.txt and Station_#_bb_bin#.txt) formatted for SEABaSS.
 
-date(yyyymmdd)=indicate date on which ac-s was deployed.
+date(yyyymmdd)=indicate date on which ha6 was deployed.
 
-kexp_vals=wavelength-dependent constants used to calculate sigma coefficients of attenutation, Kbb, (see HydroSoft user manual or kudelalab_HS6_readme.pdf for details). These coefficients are instrument can be found inside the factory-supplied calibration file (header field: calibration_file) and should be listed in the same order that START HERE.
+kexp_vals=wavelength-dependent constants (kexp) used to calculate sigma coefficients of attenutation, Kbb, (see HydroSoft user manual or kudelalab_HS6_readme.pdf for details). These coefficients are instrument-specific and can be found inside the factory-supplied calibration file (header field=calibration_file). They should be listed in the same order as wavelengths of backscattering coefficients appear in the header of the HydroSoft-generated .dat file containing the unprocessed hs6 data (header field=data_file_name). In the event that instrument-specific Kexp_vals are unavailable for a particular Hydroscat, the constant 0.14 can be used for all wavelengths. In the event that it's used, this value should still be listed multiple times.
 
+apg_bin_files=binned ac-s measured absorption files with which to sigma-correct bbp spectra. These files must be formatted for SEABaSS submission and would ideally contain data measured at the same time and place as hs6. Specifying actual depth bin sizes is unnecessary, as hs6PROCESS_SEABASS bins hs6 data according to the bin sizes of each of these listed absorpiton files. In the event user does not want to bin hs6 data, place "NA" after the = sign (e.g. apg_bin_files=NA).
+
+apg_bin_path=pathway for apg_bin_files. This pathway must be the same for all binned absorption files should more than one be listed.
+
+Metadata Header File Example:
+hs-6 metadata template
+Template contains information necessary for the processing of hs-6 data files (.dat) output using the HOBI Labs software program HydroSoft. Use commas to separate names of investigators and files, but DO NOT leave ANY spaces between words. If a space is unavoidable, use an underscore between words (like_this). Unknown or unavailable information should be indicated with NA. Latitude and longitude should be in decimal degrees and water depth should be in meters. Do not include units of measurement. These will be added later by the program. 
+#### DO NOT ALTER HEADER FIELDS####
+data_file_name=COAST18.dat
+data_file_path=/Users/JBausell/Documents/acs_data/
+affiliations=UC_Santa_Cruz
+investigators=Jesse_T_Bausell,_Easter_B_Bunny,Kris_B_Kringle
+contact=kudela@ucsc.edu
+experiment=COAST
+station=18
+latitude=36.8972
+longitude=-121.8859
+documents=NA
+water_depth=24
+calibration_files=HS990216_v3.ca 
+date(yyyymmdd)=20181025
+kexp_vals=[0.1450003,0.14499998,0.14200014,0.1439971,0.145993,0.147154]
 apg_bin_files=COAST_18_ac-s_bin_0.5.txt,COAST_18_ac-s_bin_1.txt,COAST_18_ac-s_bin_2.txt
-apg_bin_path=/Users/JBausell/Desktop/acs_Test2/
+apg_bin_path=/Users/JBausell/Documents/acs_data/
+
+Bibliography:
+
+Doxaran, D., E. Leymarie, B. Nechad, A. Dogliotti, K. Ruddick, P. Gernex, and E. Knaeps, Improved correction methods for field measurements of particulate light backscattering in turbid waters. Optics express, 2016. 24: p. 3615-3637.
+
+Morel, A, Optical Aspects of Oceanography. in Optical Aspects of Oceanography, M. G.
+Jerlov, and E. S. Nielsen, eds. (Academic Press Inc, 1977).
