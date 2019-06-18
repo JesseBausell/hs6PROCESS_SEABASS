@@ -1,17 +1,16 @@
 # hs6PROCESS_SEABASS
-Consistent with up to date protocols and NASA's SEABaSS submission standards, hs6PROCESS_SEABASS processes raw backscattering data (engineering units) sampled in natural water bodies using HOBI Labs Hydroscat-6 Spectral Backscattering Sensor and Fluorometer (hs6). hs6PROCESS_SEABASS should also be compatible with Hydroscat-4 and 2 versions of this instrument.
 
-This Matlab script processes raw backscattering coefficients, as sampled in natural water bodies using HOBI Labs Hydroscat-6 Backscattering Meter and Fluorometer. Although untested, we are confident that hs6PROCESS_SEABASS is also compatible with Hydroscat-4 and Hydroscat-2 data. We do point out however that although the number of backscattering channels it can handle is flexible, two fluorescence (fl) channels are hardwired into the hs6PROCESS_SEABASS script. Thus raw hs6 data MUST contain two fl channels. My code has hardwired wavelengths of the two fl channels as 470 excitation/510 emission (channel 1) and 442 excitation/700 emission (channel 2). If these wavelength values are incorrect, user should not worry. hs6PROCESS_SEABASS does not perform any processing steps on fl values, transfering raw values into output files. This means that user can simply "correct" fl wavelengths in the Seabass-compatible output files.
+This Matlab script processes raw backscattering coefficients, as sampled in natural water bodies using HOBI Labs Hydroscat-6 Backscattering Meter and Fluorometer (hs6).Consistent with up to date protocols and NASA's SEABaSS submission standards, hs6PROCESS_SEABASS processes raw backscattering data (engineering units) sampled in natural water bodies using hs6. hs6PROCESS_SEABASS is designed to be compatible with Hydroscat-4 (hs4) and Hydroscat-2 (hs2), however it remains untested with these two instrument variants. We also point out that, the expectation for two fluorescence (fl) channels is hardcoded into the hs6PROCESS_SEABASS script. Thus (uncorrected) input hs6 data MUST contain two fl channels. Otherwise it may not work properly. The wavelengths of these hardcoded  fl channels are as follows: 470 excitation/510 emission (channel 1) and 442 excitation/700 emission (channel 2). Nevertheless, if these wavelength values are incorrect, user should not worry. hs6PROCESS_SEABASS does not perform any processing steps on fl values that require knowing the correct fl wavelengths. This means that user can simply "correct" fl wavelengths in the output files after processing.
 
-hs6PROCESS_SEABASS uses up to date processing protocols (as of June 2019) to process backscattering coefficients, which it outputs as both individual and depth-binned spectra. All output data products are formatted as to be consistent with NASA's SeaWiFS Bio-Optical Archive and Storage System (SeaBASS). User should run hs6PROCESS_SEABASS AFTER running acs_PROCESS_SEABASS if he/she wishes to synchronize ac-s adn hs6 timestamps.
+hs6PROCESS_SEABASS uses up to date processing protocols (as of June 2019) to process backscattering coefficients, which it outputs as both individual as well as depth-binned spectra. All output data products are formatted as to be consistent with NASA's SeaWiFS Bio-Optical Archive and Storage System (SeaBASS). User should run hs6PROCESS_SEABASS AFTER running acs_PROCESS_SEABASS if he/she wishes to synchronize ac-s adn hs6 timestamps.
 
 Inputs:
 metadata_HeaderFile_hs6.txt - ascii file containing metadata required to process hs6 data 
-Station_#_ACS.fig - matlab figure (.fig) depicting vertical position of ac-s across time (of cast). This figure is not physically uploaded into hs6PROCESS_SEABASS, however, the reference point (red dot) and timestamp of reference point (figure title) should be viewed BEFORE running hs6PROCESS_SEABASS so that user can familiarize him/herself with position and timestamp of reference point (see "User Instructions"). 
+Station_#_ACS.fig - matlab figure (.fig) depicting vertical position of ac-s across time (of cast). This figure is not physically uploaded into hs6PROCESS_SEABASS, however the reference point (red dot) and timestamp (figure title) indicated in the ac-s figure should be viewed BEFORE running hs6PROCESS_SEABASS. This will enable user to familiarize him/herself with the position and timestamp of ac-s reference point before manually inputting them into hs6PROCESS_SEABASS (see "User Instructions"). 
 
 Outputs:
 Station_#_bb.txt - Seabass-formatted ascii file containing individual particulate backscattering (bbp) + fl spectra
-Station_#_bb_bin#.txt* - Seabass-formatted ascii file(s) containing processed & depth-binned bbp spectra
+Station_#_bb_bin#.txt* - Seabass-formatted ascii file(s) containing sigma-corrected and depth-binned bbp spectra, as well as depthb-binned fl spectra
 
 Required Matlab Scripts and Functions:
 Doxarian_SIGMA.m
@@ -25,17 +24,17 @@ Required data files:
 Seabass_header_ACS5.mat
 
 Program Description:
-hs6PROCESS_SEABASS processes raw field-collected backscattering coefficients following a series of steps. It is outfitted to process raw data contained in Hydrosoft-output ascii (.dat) files. Hydrosoft is a free software package provided by HOBI Labs for processing of its optical oceanographic instrumentation. It should be able to process data regardless of the number of channels a particular Hydroscat possesses (e.g. Hydroscat-6, Hydroscat-4, or Hydroscat-2), however data must have two fluorescence channels. hs6PROCESS_SEABASS can also differentiate between uncorrected backscattering, sigma-corrected backscattering, and uncorrected "beta" values; it rejects the later two of these.Steps are outlined below:
+hs6PROCESS_SEABASS processes raw field-collected backscattering coefficients following a series of steps. It is outfitted to process raw data contained in Hydrosoft-output ascii (.dat) files. Hydrosoft is a free software package provided by HOBI Labs for preliminary processing of its optical oceanographic instrumentation. 
   1. Reads ascii data. Accepts uncorrected backscattering coefficients and uncorrected fluorescence.
   2. Calculates particulate backscattering coefficients (bbp)
     a. Calculates wavelength-dependent backscattering coefficients of pure-water using methods devised by Morrel (1974)
-    b. Subtracts pure-water backscattering coefficients from uncorrected backscattering coefficients
-  3. Time stamps bbp spectra (and corresponding fluorescence measurements). Synchronizes bbp spectra with processed ac-s data upon user's      request.
-  4. QA/QC hs6 data. bbp spectra + fluorescence measurements are flagged and removed if bbp are less than zero or greater than 0.5 /m
+    b. Subtracts pure-water backscattering coefficients from total (uncorrected) backscattering coefficients
+  3. Time stamps bbp and fl spectra. It can also synchronize bbp spectra with ac-s data processed by acsPROCESS_SEABASS 
+  4. QA/QC hs6 data. Individual bbp spectra + fluorescence measurements are flagged for removal if bbp are less than zero or greater than      0.5 /m
   5. Produces SeaBASS-formatted ascii (.txt) file containing time-stamped bbp spectra/fluorescence values with depths at which they were        sampled
   6. Depth-bin bbp and fl spectra.
     a. Sigma-correct bbp spectra according to Doxaran et al. (2016) using depth-binned absorption spectra measured with ac-s. A binned 
-    absorption spectrum are chosen for each bbp spectrum using nearest neighbor approach. 
+    absorption spectrum is chosen for each bbp spectrum using nearest neighbor approach. 
     b. bbp and fl are depth-binned at using the same bin size as the absorption spectra used to sigma-correct them
   7. Produces SeaBASS-formatted ascii (.txt) file(s) containing depth-binned bbp and fl average spectra and standard deviations. 
 
@@ -49,8 +48,8 @@ User Instructions:
     useful resource.
     c. User is asked to confirm his/her selection on command window with y/n keys. If user rejects his/her selection, he/she will be           prompted to try again.
     d. User is now asked to enter a "reference time". This will be used to determine the exact time of day that the reference point (step
-    6b) was measured by hs6. This time of day should be GMT and formatted as military time (HH:MM:SS). It is be used to back-calculate and 
-    forward-calculate time of day at which other bbp/fl spectra were sampled by hs6.***
+    6b) was measured by hs6. This time of day should be GMT and formatted as military time (HH:MM:SS). This reference time is used to 
+    back and forward-calculate time of day from the reference point.***
     
  ***If user wishes to syncrhonize simultaneously-deployed hs6 and ac-s casts: Compare time series plot produced by hs6PROCESS_SEABASS to  time-series plot output from acsPROCESS_SEABASS. Select the hs6 reference point which corresponds to the position (depth) of the ac-s reference point (indicated by a red dot on previously-created acsPROCESS_SEABASS output figure). When prompted for a reference time, enter the GMT time of day that appears on the top of Station_#_ACS.fig.
  
